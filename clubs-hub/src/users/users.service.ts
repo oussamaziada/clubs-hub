@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,8 +13,8 @@ export class UsersService {
   ) {}
   
   
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+   create(createUserDto: CreateUserDto) {
+    return this.usersRepository.save(createUserDto);
   }
 
   findAll() {
@@ -25,9 +25,32 @@ export class UsersService {
     return this.usersRepository.findOneBy({ id });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  /* async update(id: number, updateUserDto: UpdateUserDto) {
+    const userToUpdate = await this.usersRepository.findOneBy({ id });
+    if (!userToUpdate) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    userToUpdate.firstName = updateUserDto.firstName ?? userToUpdate.firstName;
+    userToUpdate.lastName = updateUserDto.lastName ?? userToUpdate.lastName;
+    await this.usersRepository.save(userToUpdate);
+    return userToUpdate; 
+  } */
+  async update(id: number, updateUserDto: UpdateUserDto) {
+  const userToUpdate = await this.usersRepository.preload({
+    id,
+    ...updateUserDto
+  });
+  // tester le cas ou l'utilisateur d'id id n'existe pas
+  if(! userToUpdate) {
+    throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
   }
+  //sauvgarder l'utilisateur apres modification'
+  return await this.usersRepository.save(userToUpdate);
+
+}
+
+
+
 
   async remove(id: number): Promise<void> {
     await this.usersRepository.delete(id);
