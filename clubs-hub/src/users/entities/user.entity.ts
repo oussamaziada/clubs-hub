@@ -1,7 +1,8 @@
-import { Post } from "src/post/entities/post.entity";
-import { Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { PostEntity } from "src/post/entities/post.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
-export class User {
+@Entity('user')
+export class UserEntity {
   
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,8 +13,9 @@ export class User {
   @Column()
   lastName: string;
 
-  @OneToMany(type => Post, post => post.owner)
-  posts: Post[];
+  
+  @OneToMany(type => PostEntity, post => post.owner)
+  posts: PostEntity[];
 
   
 }

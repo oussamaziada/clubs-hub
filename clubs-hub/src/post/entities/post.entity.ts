@@ -1,7 +1,9 @@
-import { User } from "src/users/entities/user.entity";
-import { PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { UserEntity } from "src/users/entities/user.entity";
+import { PrimaryGeneratedColumn, Column, ManyToOne, Entity } from "typeorm";
 
-export class Post {
+
+@Entity('post')
+export class PostEntity {
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -12,6 +14,5 @@ export class Post {
   @Column()
   likes: number;
 
-  @ManyToOne(type => User, user => user.posts)
-  owner : User
-}
+  @ManyToOne(type => UserEntity, user => user.posts)
+  owner : UserEntity ;}
