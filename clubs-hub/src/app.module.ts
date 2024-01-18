@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { PostModule } from './post/post.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EventModule } from './event/event.module';
 
 
 @Module({
@@ -24,7 +25,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       database: 'clubs-hub',
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: true,
-  }),UsersModule, PostModule],
+  }),UsersModule, PostModule, EventModule],
   controllers: [AppController],
   providers: [AppService],
 })
