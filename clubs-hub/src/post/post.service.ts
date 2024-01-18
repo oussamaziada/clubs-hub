@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostEntity } from './entities/post.entity';
@@ -18,18 +18,46 @@ export class PostService {
   }
 
   findAll() {
-    return `This action returns all post`;
+    return this.postRepository.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} post`;
+    return  this.postRepository.findOneBy({ id });
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    return `This action updates a #${id} post`;
+  
+  async update(id: number, updatePostDto: UpdatePostDto) {
+    const postToUpdate = await this.postRepository.preload({
+      id,
+      ...updatePostDto
+    });
+    // tester le cas ou l'utilisateur d'id id n'existe pas
+    if(! postToUpdate) {
+      throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
+    }
+    //sauvgarder l'utilisateur apres modification'
+    return await this.postRepository.save(postToUpdate);
+  }
+  
+  
+  async remove(id: number) {
+    return await this.postRepository.delete(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+
+  async addLike(postId : number): Promise<PostEntity> {
+    const post = await this.postRepository.findOneBy({id : postId }) ;
+
+    if (!post) {
+      throw new NotFoundException(`Post with ID ${postId} not found`);
+    }
+
+    // Increment the likes count
+    post.likes += 1;
+
+    // Save the updated post to the database
+    await this.postRepository.save(post);
+
+    return post;
   }
 }

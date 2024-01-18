@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -31,4 +31,17 @@ export class PostController {
   remove(@Param('id') id: string) {
     return this.postService.remove(+id);
   }
+
+  @Post(':id/like')
+  async addLike(@Param('id') postId: number) {
+    try {
+      const likedPost = await this.postService.addLike(postId);
+      return `Like added to post with ID ${likedPost.id}. Total likes: ${likedPost.likes}`;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return `Post with ID ${postId} not found`;
+      }
+      throw error;
+    }
+}
 }
