@@ -1,6 +1,8 @@
 import { TimestampEntites } from "src/Generics/timestamps.entities";
-import { PostEntity } from "src/post/entities/post.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { ClubEntity } from "src/club/entities/club.entity";
+import { UserRoleEnum } from "src/enums/user-role.enum";
+import { EventEntity } from "src/event/entities/event.entity";
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('user')
 export class UserEntity extends TimestampEntites {
@@ -14,9 +16,29 @@ export class UserEntity extends TimestampEntites {
   @Column()
   lastName: string;
 
-  
-  @OneToMany(type => PostEntity, post => post.owner)
-  posts: PostEntity[];
+  @Column()
+  username: string;
 
+  @Column()
+  password: string;
+
+  @Column()
+  salt: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRoleEnum,
+    default: UserRoleEnum.USER
+  })
+  role: string;
+
+  @ManyToMany(() => EventEntity)
+  events: EventEntity[];
+
+  @ManyToMany(() => ClubEntity)
+  clubs: ClubEntity[];
+
+  
+  
   
 }

@@ -1,5 +1,5 @@
 import { TimestampEntites } from "src/Generics/timestamps.entities";
-import { UserEntity } from "src/users/entities/user.entity";
+import { ClubEntity } from "src/club/entities/club.entity";
 import { PrimaryGeneratedColumn, Column, ManyToOne, Entity } from "typeorm";
 
 
@@ -15,5 +15,5 @@ export class PostEntity extends TimestampEntites{
   @Column()
   likes: number;
 
-  @ManyToOne(type => UserEntity, user => user.posts)
-  owner : UserEntity ;}
+  @ManyToOne(type => ClubEntity, club => club.posts, {onDelete: 'CASCADE',eager : true})
+  owner : ClubEntity ;}
