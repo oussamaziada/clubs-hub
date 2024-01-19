@@ -33,7 +33,7 @@ export class EventService {
     });
     // tester le cas ou l'utilisateur d'id id n'existe pas
     if(! userToUpdate) {
-      throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
+      throw new NotFoundException(`L'evenement d'id ${id} n'existe pas`);
     }
     //sauvgarder l'utilisateur apres modification'
     return await this.eventRepository.save(userToUpdate);
@@ -41,9 +41,8 @@ export class EventService {
   }
 
   async softDeleteEvent(id: number, /* user */) {
-    const cv = await this.eventRepository.findOneBy({id});
-    console.log('cv', cv);
-    if (!cv) {
+    const event = await this.eventRepository.findOneBy({id});
+    if (!event) {
       throw new NotFoundException('');
     }
    // if (this.userService.isOwnerOrAdmin(cv, user))
@@ -54,8 +53,8 @@ export class EventService {
 
   async restoreEvent(id: number, /* user */) {
 
-    const cv = await this.eventRepository.query("select * from event_entity where id = ?", [id]);
-    if (!cv) {
+    const event = await this.eventRepository.query("select * from event_entity where id = ?", [id]);
+    if (!event) {
       throw new NotFoundException('event not found');
     }
    // if (this.userService.isOwnerOrAdmin(cv, user))
