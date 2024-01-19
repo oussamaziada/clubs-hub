@@ -6,6 +6,8 @@ import { PostModule } from './post/post.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventModule } from './event/event.module';
 import { ClubModule } from './club/club.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './users/guards/jwt-auth.guard';
 
 
 @Module({
@@ -28,6 +30,11 @@ import { ClubModule } from './club/club.module';
       synchronize: true,
   }),UsersModule, PostModule, EventModule, ClubModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
