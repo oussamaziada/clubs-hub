@@ -8,6 +8,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategy/Passport-jwt.strategy';
 import * as dotenv from 'dotenv';
 import { ConfigService } from '@nestjs/config';
+import { ClubModule } from 'src/club/club.module';
+import { ClubEntity } from 'src/club/entities/club.entity';
 
 dotenv.config();
 @Module({
@@ -19,9 +21,9 @@ dotenv.config();
       signOptions: {
         expiresIn: 3600
       }
-    })
+    }),ClubModule
 ],
   controllers: [UsersController],
-  providers: [UsersService, JwtStrategy, ConfigService],
+  providers: [UsersService, JwtStrategy, ConfigService,ClubEntity],
 })
 export class UsersModule {}

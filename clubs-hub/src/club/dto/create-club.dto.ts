@@ -1,4 +1,4 @@
-import { IsDate, IsString } from "class-validator";
+import { IsDate, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateClubDto {
 
@@ -9,7 +9,13 @@ export class CreateClubDto {
     field : string ;
 
     @IsDate()
-    date: Date;
+    creationDate: Date;
+
+    @IsNotEmpty()
+    username: string;
+
+    @IsNotEmpty()
+    password: string;
 
 
 }

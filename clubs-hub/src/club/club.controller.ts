@@ -2,14 +2,26 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/
 import { ClubService } from './club.service';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
+import { Public } from 'src/decorators/public.decorator';
+import { LoginCredentialDto } from 'src/users/dto/LoginCredentialDto';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('club')
 export class ClubController {
   constructor(private readonly clubService: ClubService) {}
 
-  @Post()
+  @Public()
+  @Post('signup')
   create(@Body() createClubDto: CreateClubDto) {
     return this.clubService.create(createClubDto);
+  }
+
+  @Public()
+  @Post('login')
+  login(
+    @Body() credentials: LoginCredentialDto
+  ) {
+    return this.clubService.login(credentials);
   }
 
   @Get()

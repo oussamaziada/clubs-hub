@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { LoginCredentialDto } from './dto/LoginCredentialDto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UserRoleEnum } from 'src/enums/user-role.enum';
 
 
 
@@ -107,8 +108,9 @@ export class UsersService {
     }
   } 
 
-
-
+  isOwnerOrAdmin(object, user) {
+    return user.role === UserRoleEnum.ADMIN || (object.user && object.user.id === user.id);
+  }
 
   async remove(id: number): Promise<void> {
     await this.usersRepository.delete(id);

@@ -9,6 +9,15 @@ export class ClubEntity extends TimestampEntites {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ unique: true})
+  username: string;
+
+  @Column()
+  password: string;
+
+  @Column()
+  salt: string;
+
   @Column()
   name: string;
 
@@ -17,6 +26,9 @@ export class ClubEntity extends TimestampEntites {
 
   @Column()
   creationDate : Date ;
+
+  @Column({ default: 'club' })
+  role : string ;
  
   @ManyToMany(type => UserEntity)
   members: UserEntity[];
@@ -26,6 +38,8 @@ export class ClubEntity extends TimestampEntites {
 
   @OneToMany(type => EventEntity, event => event.organizer)
   events: EventEntity[];
+
+  
 
 
 }

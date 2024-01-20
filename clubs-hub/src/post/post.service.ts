@@ -4,17 +4,24 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PostEntity } from './entities/post.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ClubService } from 'src/club/club.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostEntity)
     private postRepository: Repository<PostEntity>,
+    private clubService: ClubService,
   ) {}
 
 
-  create(createPostDto: CreatePostDto) {
-    return this.postRepository.save(createPostDto);
+  async create(createPostDto: CreatePostDto, user): Promise<PostEntity> {
+    const newPost = this.postRepository.create(createPostDto);
+    newPost.owner = user;
+    await this.postRepository.save(newPost);
+    return newPost;
+
+    
   }
 
   findAll() {
@@ -26,17 +33,20 @@ export class PostService {
   }
 
   
-  async update(id: number, updatePostDto: UpdatePostDto) {
+  async update(id: number, updatePostDto: UpdatePostDto, user) {
     const postToUpdate = await this.postRepository.preload({
       id,
       ...updatePostDto
     });
-    // tester le cas ou l'utilisateur d'id id n'existe pas
     if(! postToUpdate) {
       throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
     }
-    //sauvgarder l'utilisateur apres modification'
-    return await this.postRepository.save(postToUpdate);
+    if (this.clubService.isOwnerOrAdmin(user, postToUpdate))
+      return await this.postRepository.save(postToUpdate);
+    else
+      throw new NotFoundException(`Vous n'avez pas le droit de modifier ce post`);
+  
+    
   }
   
   

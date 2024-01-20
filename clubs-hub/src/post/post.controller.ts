@@ -2,14 +2,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } 
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  create(@Body() createPostDto: CreatePostDto, @User() user) {
+    return this.postService.create(createPostDto, user);
   }
 
   @Get()
@@ -23,8 +24,8 @@ export class PostController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto, @User() user) {
+    return this.postService.update(+id, updatePostDto, user);
   }
 
   @Delete(':id')
