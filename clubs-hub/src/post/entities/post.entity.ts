@@ -15,5 +15,5 @@ export class PostEntity extends TimestampEntites{
   @Column()
   likes: number;
 
-  @ManyToOne(type => ClubEntity, club => club.posts, {onDelete: 'CASCADE',eager : true})
+  @ManyToOne(type => ClubEntity, club => club.posts, {eager : true ,cascade: ['insert', 'update'],nullable: true})
   owner : ClubEntity ;}

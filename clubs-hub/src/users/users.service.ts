@@ -8,14 +8,19 @@ import { LoginCredentialDto } from './dto/LoginCredentialDto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserRoleEnum } from 'src/enums/user-role.enum';
+import { ClubEntity } from 'src/club/entities/club.entity';
 
 
 
 @Injectable()
 export class UsersService {
+  static jwtService: any;
   constructor(
     @InjectRepository(UserEntity)
+    @InjectRepository(ClubEntity)
     private usersRepository: Repository<UserEntity>,
+    @InjectRepository(ClubEntity)
+    private clubRepository: Repository<ClubEntity>,
     private jwtService: JwtService
   ) {}
   
@@ -24,6 +29,9 @@ export class UsersService {
     const user = this.usersRepository.create({
       ...userData
     });
+    if (await this.clubRepository.findOne({ where: { username: user.username } })) {
+      throw new ConflictException(`Le username doit être unique`);
+    }
     user.salt = await bcrypt.genSalt();
     user.password = await bcrypt.hash(user.password, user.salt);
     try {

@@ -3,6 +3,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { User } from 'src/decorators/user.decorator';
+import { PostEntity } from './entities/post.entity';
 
 @Controller('post')
 export class PostController {
@@ -23,13 +24,23 @@ export class PostController {
     return this.postService.findOne(+id);
   }
 
+  @Get('club/:id')
+  findByClubId(@Param('id') id: string) {
+    return this.postService.findByClubId(+id);
+  }
+/* 
+  @Get('myposts')
+  async findMyPosts(@User() user): Promise<PostEntity[]> {
+    return await this.postService.findMyPosts(user);
+  } */
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto, @User() user) {
     return this.postService.update(+id, updatePostDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @User() user) {
     return this.postService.remove(+id);
   }
 

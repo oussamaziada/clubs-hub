@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { UserEntity } from './entities/user.entity';
@@ -21,9 +21,11 @@ dotenv.config();
       signOptions: {
         expiresIn: 3600
       }
-    }),ClubModule
+    }), forwardRef(() => ClubModule)
 ],
   controllers: [UsersController],
   providers: [UsersService, JwtStrategy, ConfigService,ClubEntity],
+  exports: [UsersService ,TypeOrmModule.forFeature([UserEntity])]
 })
 export class UsersModule {}
+

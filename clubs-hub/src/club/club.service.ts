@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateClubDto } from './dto/create-club.dto';
 import { UpdateClubDto } from './dto/update-club.dto';
 import { ClubEntity } from './entities/club.entity';
@@ -9,6 +9,7 @@ import { LoginCredentialDto } from 'src/users/dto/LoginCredentialDto';
 
 import { UserRoleEnum } from 'src/enums/user-role.enum';
 import { JwtService } from '@nestjs/jwt';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ClubService {
@@ -16,6 +17,8 @@ export class ClubService {
   constructor(
     @InjectRepository(ClubEntity)
     private clubRepository: Repository<ClubEntity>,
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<ClubEntity>,
     private jwtService: JwtService, 
   ) {}
 
@@ -27,6 +30,9 @@ export class ClubService {
     const club = this.clubRepository.create({
       ...clubData
     });
+    if (await this.usersRepository.findOne({ where: { username: club.username } })) {
+      throw new ConflictException(`Le username doit être unique`);
+    }
     club.salt = await bcrypt.genSalt();
     club.password = await bcrypt.hash(club.password, club.salt);
     try {
@@ -62,6 +68,7 @@ export class ClubService {
       const hashedPassword = await bcrypt.hash(password, club.salt);
       if (hashedPassword === club.password) {
         const payload = {
+          id: club.id,
           username: club.username,
           name: club.name,
           field: club.field,
@@ -82,46 +89,53 @@ export class ClubService {
     return this.clubRepository.find();
   }
 
-  findOne(id: number) {
-    return this.clubRepository.findOneBy({ id });
+  async findOne(id: number) {
+    const club= await this.clubRepository.findOneBy({ id });
+    console.log(club.posts);
+    return club
+
   }
 
-  async update(id: number, updateClubDto: UpdateClubDto) {
+  
+
+  async update(id: number, updateClubDto: UpdateClubDto, user) {
     const clubToUpdate = await this.clubRepository.preload({
       id,
       ...updateClubDto
     });
     // tester le cas ou l'utilisateur d'id id n'existe pas
     if(! clubToUpdate) {
-      throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
+        throw new NotFoundException(`Le club d'id ${id} n'existe pas`);
     }
-    //sauvgarder l'utilisateur apres modification'
-    return await this.clubRepository.save(clubToUpdate);
+    if (user.id === id || user.role === UserRoleEnum.ADMIN)
+        return await this.clubRepository.save(clubToUpdate);
+      else
+        throw new UnauthorizedException(`Vous n'avez pas le droit de modifier ce club`);
   
   }
 
-  async softDeleteClub(id: number /* club */) {
+  async softDeleteClub(id: number ,user) {
     const elmnt = await this.clubRepository.findOneBy({id});
     if (!elmnt) {
       throw new NotFoundException('');
     }
-   // if (this.userService.isOwnerOrAdmin(cv, club))
+    if (user.id === id || user.role === UserRoleEnum.ADMIN)
       return  this.clubRepository.softDelete(id);
-   // else
-    //  throw new UnauthorizedException('');
+    else
+      throw new UnauthorizedException('');
   }
 
 
-  async restoreClub(id: number, /* club */) {
+  async restoreClub(id: number, user) {
 
     const club = await this.clubRepository.query("select * from club_entity where id = ?", [id]);
     if (!club) {
       throw new NotFoundException('club not found');
     }
-   // if (this.userService.isOwnerOrAdmin(cv, club))
+    if (user.id === club.id || user.role === UserRoleEnum.ADMIN)
       return this.clubRepository.restore(id);
-   // else
-    //  throw new UnauthorizedException('');
+    else
+      throw new UnauthorizedException('');
   }
 
 
@@ -129,6 +143,33 @@ export class ClubService {
     return club.role === UserRoleEnum.ADMIN || (object.club && object.club.id === club.id);
   }
 
+  async addMember(clubId: number, user) {
+    const club = await this.clubRepository.findOne({ where: { id: clubId } });
 
+    if (!club) {
+      throw new NotFoundException(`Club with ID ${clubId} not found`);
+    }
+  
+    // Add the user to the club's members
+    club.members.push(user);
+  
+    // Save the updated club
+    await this.clubRepository.save(club); 
+  }
+
+  async findMembers(clubId: number) {
+    const club = await this.clubRepository
+    .createQueryBuilder('club')
+    .leftJoinAndSelect('club.members', 'member')
+    .where('club.id = :clubId', { clubId })
+    .getOne();
+
+  if (!club) {
+    throw new NotFoundException(`Club with ID ${clubId} not found`);
+  }
+
+  return club.members;
+
+  }
 
 }

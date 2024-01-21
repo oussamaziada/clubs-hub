@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ClubService } from './club.service';
 import { ClubController } from './club.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,6 +6,9 @@ import { ClubEntity } from './entities/club.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
+import { UserEntity } from 'src/users/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
+import { ConfigService } from '@nestjs/config';
 
 
 dotenv.config();
@@ -18,9 +21,10 @@ dotenv.config();
       signOptions: {
         expiresIn: 3600
       }
-    })],
+    }),forwardRef(() => UsersModule)
+  ],
   controllers: [ClubController],
-  providers: [ClubService],
+  providers: [ClubService,UserEntity,ConfigService],
   exports: [ClubService,TypeOrmModule.forFeature([ClubEntity])]
 })
 export class ClubModule {}

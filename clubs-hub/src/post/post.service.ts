@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostEntity } from './entities/post.entity';
@@ -16,10 +16,14 @@ export class PostService {
 
 
   async create(createPostDto: CreatePostDto, user): Promise<PostEntity> {
-    const newPost = this.postRepository.create(createPostDto);
-    newPost.owner = user;
-    await this.postRepository.save(newPost);
-    return newPost;
+    if (user.role === 'admin' || user.role === 'club') {
+      const newPost = this.postRepository.create(createPostDto);
+      newPost.owner = user;
+      await this.postRepository.save(newPost);
+      return newPost;
+    }
+    else
+      throw new UnauthorizedException(`Vous n'avez pas le droit de créer un post`);
 
     
   }
@@ -32,6 +36,23 @@ export class PostService {
     return  this.postRepository.findOneBy({ id });
   }
 
+  findByClubId(id: number) {
+    return this.postRepository
+    .createQueryBuilder('post')
+    .innerJoin('post.owner', 'owner')
+    .where('owner.id = :id', { id })
+    .getMany();
+  }
+
+  /* async findMyPosts(user): Promise<PostEntity[]> {
+    return await this.postRepository.find({ where: { owner : user } });
+    console.log(user,"1"); // print out the user object
+    console.log(user.id),"2"; // print out the user.id value 
+     return await this.postRepository.createQueryBuilder('post')
+    .innerJoin('post.owner', 'owner')
+    .where('owner.id = :userId', { userId: user.id })
+    .getMany(); 
+  }*/
   
   async update(id: number, updatePostDto: UpdatePostDto, user) {
     const postToUpdate = await this.postRepository.preload({
@@ -39,7 +60,7 @@ export class PostService {
       ...updatePostDto
     });
     if(! postToUpdate) {
-      throw new NotFoundException(`L'utilisateur d'id ${id} n'existe pas`);
+      throw new NotFoundException(`Le post d'id ${id} n'existe pas`);
     }
     if (this.clubService.isOwnerOrAdmin(user, postToUpdate))
       return await this.postRepository.save(postToUpdate);

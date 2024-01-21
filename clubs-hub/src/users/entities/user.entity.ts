@@ -2,7 +2,7 @@ import { TimestampEntites } from "src/Generics/timestamps.entities";
 import { ClubEntity } from "src/club/entities/club.entity";
 import { UserRoleEnum } from "src/enums/user-role.enum";
 import { EventEntity } from "src/event/entities/event.entity";
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('user')
 export class UserEntity extends TimestampEntites {
@@ -35,7 +35,7 @@ export class UserEntity extends TimestampEntites {
   @ManyToMany(() => EventEntity)
   events: EventEntity[];
 
-  @ManyToMany(() => ClubEntity)
+  @ManyToMany(() => ClubEntity, club => club.members, {nullable : true,cascade: ['insert', 'update']})
   clubs: ClubEntity[];
 
   
