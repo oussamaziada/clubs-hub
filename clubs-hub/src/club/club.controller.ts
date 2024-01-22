@@ -60,4 +60,9 @@ export class ClubController {
   addMember(@Param('id') id: string, @User() user) {
     return this.clubService.addMember(+id, user);
   }
+
+  @Post('addMemberById/:memberId')
+  addMemberById(@Param('memberId') memberId: string, @User() club) {
+    return this.clubService.addMemberById(+memberId, club);
+  }
 }

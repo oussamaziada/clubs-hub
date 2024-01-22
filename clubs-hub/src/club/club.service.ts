@@ -157,6 +157,21 @@ export class ClubService {
     await this.clubRepository.save(club); 
   }
 
+  async addMemberById(userId: number,club): Promise<void> {
+    // Find the user by its ID
+    const user = await this.usersRepository.findOne({ where :{id:userId}});
+  
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+  
+    // Add the user to the club's members
+    club.members.push(user as unknown as UserEntity);
+  
+    // Save the updated club
+    await this.clubRepository.save(club);
+  }
+
   async findMembers(clubId: number) {
     const club = await this.clubRepository
     .createQueryBuilder('club')
