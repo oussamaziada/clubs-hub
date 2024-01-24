@@ -14,8 +14,15 @@ export class EventService {
   ) {}
 
 
-  create(createEventDto: CreateEventDto) {
-    return this.eventRepository.save(createEventDto);
+  async create(createEventDto: CreateEventDto, user): Promise<EventEntity> {
+    if (user.role === 'admin' || user.role === 'club') {
+      const newEvent = this.eventRepository.create(createEventDto);
+      newEvent.organizer = user;
+      await this.eventRepository.save(newEvent);
+      return newEvent;
+    }
+    else
+      throw new NotFoundException(`Vous n'avez pas le droit de créer un evenement`);
   }
 
   findAll() {
@@ -24,6 +31,14 @@ export class EventService {
 
   findOne(id: number) {
     return this.eventRepository.findOneBy({ id });
+  }
+
+  findByClubId(id: number) {
+    return this.eventRepository
+    .createQueryBuilder('event')
+    .innerJoin('event.organizer', 'organizer')
+    .where('organizer.id = :id', { id })
+    .getMany();
   }
 
   async update(id: number, updateEventDto: UpdateEventDto) {
@@ -61,5 +76,14 @@ export class EventService {
       return this.eventRepository.restore(id);
    // else
     //  throw new UnauthorizedException('');
+  }
+
+  findLastFiveEvents() {
+    return this.eventRepository.find({
+      order: {
+        id: 'DESC', // assuming that the id is auto-incremented
+      },
+      take: 5,
+    });
   }
 }

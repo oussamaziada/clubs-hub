@@ -3,14 +3,15 @@ import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtAuthGuard } from 'src/users/guards/jwt-auth.guard';
+import { User } from 'src/decorators/user.decorator';
 
 @Controller('event')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  create(@Body() createEventDto: CreateEventDto) {
-    return this.eventService.create(createEventDto);
+  create(@Body() createEventDto: CreateEventDto, @User() user) {
+    return this.eventService.create(createEventDto, user);
   }
 
   
@@ -19,10 +20,20 @@ export class EventController {
     return this.eventService.findAll();
   }
 
+  @Get('lastEvents')
+  findLastEvents() {
+    return this.eventService.findLastFiveEvents();
+  }
+
   
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.eventService.findOne(+id);
+  }
+
+  @Get('club/:id')
+  findByClubId(@Param('id') id: string) {
+    return this.eventService.findByClubId(+id);
   }
 
   
